@@ -1,6 +1,9 @@
 import { Imagem } from "../Type/imagemType";
-import {storage} from  '../libs/fireBase'
-import { ref,listAll,getDownloadURL } from "firebase/storage";
+import {storage} from  '../libs/fireBase';
+import { v4 as createId } from 'uuid';
+
+
+import { ref,listAll,getDownloadURL,uploadBytes } from "firebase/storage";
 
 
 export const getAll = async ()=>{
@@ -18,7 +21,20 @@ export const getAll = async ()=>{
         })
         
     }
+    
+    return listPhotos
+}
+export const sendImage = async (file: File) => {
+    if(['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
 
+        let randomName = createId();
+        let newFile = ref(storage, `images/${randomName}`);
 
-return listPhotos
+        let upload = await uploadBytes(newFile, file);
+        let photoUrl = await getDownloadURL(upload.ref);
+
+        return { name: upload.ref.name, url: photoUrl } as Imagem;
+    } else {
+        return new Error('Tipo de arquivo não permitido.');
+    }
 }
